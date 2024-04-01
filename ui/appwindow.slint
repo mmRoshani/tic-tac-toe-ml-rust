@@ -1,0 +1,175 @@
+import { Button, VerticalBox, LineEdit, HorizontalBox } from "std-widgets.slint";
+
+export component AppWindow inherits Window {
+
+    in property <string> btn_0: "";
+    in property <string> btn_1: "";
+    in property <string> btn_2: "";
+    in property <string> btn_3: "";
+    in property <string> btn_4: "";
+    in property <string> btn_5: "";
+    in property <string> btn_6: "";
+    in property <string> btn_7: "";
+    in property <string> btn_8: "";
+
+    callback play(int);
+
+    background: #313e50;
+    GridLayout {
+        padding: 50px;
+        spacing: 20px;
+        Row {
+            Text {
+                text: "Welcome to fast Tic-Tac-Toe client in rust!";
+                horizontal-alignment: center;
+                font-size: 16px;
+                font-weight: 1500;
+                color: white;
+            }
+        }
+
+        Row {
+            Text {
+                text: "Start the game by clicking on the buttons below";
+                horizontal-alignment: center;
+                font-size: 15px;
+                font-italic: true;
+                color: whitesmoke;
+            }
+        }
+
+        Row {
+            GridLayout {
+                min-height: 360px;
+                min-width: 360px;
+                spacing: 10px;
+                HorizontalLayout {
+                    alignment: space-between;
+                    btn_0 := Button {
+                        text: root.btn_0;
+                        primary: true;
+                        height: 100px;
+                        width: 100px;
+                        clicked => {
+                            self.enabled = false;
+                            play(0);
+                        }
+                    }
+
+                    btn_1 := Button {
+                        text: root.btn_1;
+                        primary: true;
+                        height: 100px;
+                        width: 100px;
+                        clicked => {
+                            self.enabled = false;
+                            play(1);
+                        }
+                    }
+
+                    btn_2 := Button {
+                        text: root.btn_2;
+                        primary: true;
+                        height: 100px;
+                        width: 100px;
+                        clicked => {
+                            self.enabled = false;
+                            play(2);
+                        }
+                    }
+
+                    row: 0;
+                    col: 0;
+                }
+
+                HorizontalLayout {
+                    alignment: space-between;
+                    btn_3 := Button {
+                        text: root.btn_3;
+                        primary: true;
+                        height: 100px;
+                        width: 100px;
+                        clicked => {
+                            self.enabled = false;
+                            play(3);
+                        }
+                    }
+
+                    btn_4 := Button {
+                        text: root.btn_4;
+                        primary: true;
+                        height: 100px;
+                        width: 100px;
+                        clicked => {
+                            self.enabled = false;
+                            play(4);
+                        }
+                    }
+
+                    btn_5 := Button {
+                        text: root.btn_5;
+                        primary: true;
+                        height: 100px;
+                        width: 100px;
+                        clicked => {
+                            self.enabled = false;
+                            play(5);
+                        }
+                    }
+
+                    row: 1;
+                    col: 0;
+                }
+
+                HorizontalLayout {
+                    alignment: space-between;
+                    btn_6 := Button {
+                        text: root.btn_6;
+                        primary: true;
+                        height: 100px;
+                        width: 100px;
+                        clicked => {
+                            self.enabled = false;
+                            play(6);
+                        }
+                    }
+
+                    btn_7 := Button {
+                        text: root.btn_7;
+                        primary: true;
+                        height: 100px;
+                        width: 100px;
+                        clicked => {
+                            self.enabled = false;
+                            play(7);
+                        }
+                    }
+
+                    btn_8 := Button {
+                        text: root.btn_8;
+                        primary: true;
+                        height: 100px;
+                        width: 100px;
+                        clicked => {
+                            self.enabled = false;
+                            play(8);
+                        }
+                    }
+
+                    row: 2;
+                    col: 0;
+                }
+            }
+        }
+
+        Row {
+            Button {
+                text: "Reset";
+                primary: true;
+                height: 35px;
+                clicked => {
+                }
+            }
+        }
+    }
+}
