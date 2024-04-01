@@ -13,6 +13,7 @@ export component AppWindow inherits Window {
     in property <string> btn_8: "";
 
     callback play(int);
+    callback reset_state();
 
     background: #313e50;
     GridLayout {
@@ -168,6 +169,7 @@ export component AppWindow inherits Window {
                 primary: true;
                 height: 35px;
                 clicked => {
+                  reset_state();
                 }
             }
         }

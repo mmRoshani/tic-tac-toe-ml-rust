@@ -52,15 +52,32 @@ fn main() -> Result<(), slint::PlatformError> {
         }
     });
 
+    ui.on_reset_state(move || {
+        // clear_state(&mut board);
+    });
+
     ui.run()
+}
+
+fn clear_state(board: &mut engine::ml::Board) {
+    board.state = [[None; 3]; 3];
 }
 
 fn movemnt(board: &mut engine::ml::Board, row: usize, col: usize) -> (usize, usize) {
     board.state[row][col] = Some('X');
+    board.moves_played += 1;
+
+    if board.winning_lines('X') {
+        println!("u won");
+    } else if board.winning_lines('O') {
+        println!("computer won!");
+    } else if board.moves_played == 9 {
+        println!("end of the game");
+    }
 
     println!("board score is {}", board.board_state());
 
-    let mut best_val = -std::i32::MAX;
+    let mut best_val = -std::f64::MAX;
     let mut machine_best_move_val = (0, 0);
 
     for (ni, nj) in neighbors(row, col) {
@@ -79,7 +96,7 @@ fn movemnt(board: &mut engine::ml::Board, row: usize, col: usize) -> (usize, usi
         }
     }
 
-    board.moves_played = board.moves_played + 2;
+    board.moves_played += 1;
 
     for i in 0..3 {
         for j in 0..3 {
