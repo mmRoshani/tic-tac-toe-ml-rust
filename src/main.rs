@@ -112,77 +112,52 @@ fn movemnt(
     board.moves_played += 1;
 
     if board.winning_lines('X') {
-        println!("u won");
+        board.x_o_winning_state = (board.x_o_winning_state.0 + 1, board.x_o_winning_state.1);
+        board.update_function(Some('X'));
         let dialog = DialogBox::new().expect("some error");
-        dialog.set_message_text("you won!".into());
+        dialog.set_message_text(
+            format!(
+                "You won, your score is: {} and computer socre is: {}",
+                board.x_o_winning_state.0, board.x_o_winning_state.1
+            )
+            .into(),
+        );
         let _ = dialog.run();
         ui.set_disable_tiles(true);
         return (10, 10);
     } else if board.winning_lines('O') {
-        println!("computer won!");
+        board.x_o_winning_state = (board.x_o_winning_state.0, board.x_o_winning_state.1 + 1);
+        board.update_function(Some('O'));
         let dialog = DialogBox::new().expect("some error");
-        dialog.set_message_text("computer won ;)".into());
+        dialog.set_message_text(
+            format!(
+                "Computer won ;), your score is: {} and computer socre is: {}",
+                board.x_o_winning_state.0, board.x_o_winning_state.1
+            )
+            .into(),
+        );
         let _ = dialog.run();
         ui.set_disable_tiles(true);
         return (10, 10);
     } else if board.moves_played == 9 {
-        println!("end of the game");
+        board.x_o_winning_state = (board.x_o_winning_state.0 + 1, board.x_o_winning_state.1 + 1);
+        board.update_function(Some('-'));
         let dialog = DialogBox::new().expect("some error");
-        dialog.set_message_text("no one won, like life!".into());
+        dialog.set_message_text(
+            format!(
+                "Equal game, good job; your score is: {} and computer socre is: {}",
+                board.x_o_winning_state.0, board.x_o_winning_state.1
+            )
+            .into(),
+        );
         let _ = dialog.run();
         ui.set_disable_tiles(true);
         return (10, 10);
     }
 
-    println!("board score is {}", board.board_state());
-
-    let mut best_val = -std::f64::MAX;
-    let mut machine_best_move_val = (0, 0);
-
-    for (ni, nj) in neighbors(row, col) {
-        // set just to test
-        if board.state[ni][nj] == None && row != ni && col != nj {
-            board.state[ni][nj] = Some('O');
-
-            let v = board.v();
-            if v >= best_val {
-                best_val = v;
-                machine_best_move_val = (ni, nj);
-            } else {
-                // remove is not best move
-                board.state[ni][nj] = None;
-            }
-        }
-    }
-
     board.moves_played += 1;
 
-    machine_best_move_val
-}
-
-fn neighbors(i: usize, j: usize) -> Vec<(usize, usize)> {
-    let directions = [
-        (-1, -1),
-        (-1, 0),
-        (-1, 1),
-        (0, -1),
-        (0, 1),
-        (1, -1),
-        (1, 0),
-        (1, 1),
-    ];
-
-    let mut neighbors = Vec::new();
-    for (di, dj) in &directions {
-        let ni = i as i32 + di;
-        let nj = j as i32 + dj;
-
-        if ni >= 0 && nj >= 0 && ni < 3 && nj < 3 {
-            neighbors.push((ni as usize, nj as usize));
-        }
-    }
-
-    neighbors
+    board.computer_move()
 }
 
 fn show_o(
@@ -233,10 +208,6 @@ fn show_o(
 
         ui.set_disable_tiles(false);
         board.state = [[None; 3]; 3];
-        println!(
-            "w1: {}, w2: {}, w3: {}, w4: {}, w5: {}, w6: {}, w7: {}",
-            board.w1, board.w2, board.w3, board.w4, board.w5, board.w6, board.w7
-        );
     }
 
     let mut flipped_tiles = tiles_model
