@@ -1,4 +1,4 @@
-import { Button, StandardButton, VerticalBox, LineEdit, HorizontalBox, TextEdit} from "std-widgets.slint";
+import { Button, StandardButton, VerticalBox, LineEdit, HorizontalBox} from "std-widgets.slint";
 
 
 struct TileData {
@@ -62,6 +62,7 @@ export component MainWindow inherits Window {
     width: 212px;
     height: 212px;
     background: #313e50;
+
 
     in-out property <[TileData]> memory_tiles: [
         { key: 0},

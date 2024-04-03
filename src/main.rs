@@ -95,10 +95,6 @@ fn main() {
         }
     });
 
-    // ui.on_reset_state(move || {
-    //     // clear_state(&mut board);
-    // });
-
     ui.run().unwrap();
 }
 
