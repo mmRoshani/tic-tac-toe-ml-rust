@@ -6,6 +6,8 @@ pub struct Board {
     pub w3: f64,
     pub w4: f64,
     pub w5: f64,
+    pub w6: f64,
+    pub w7: f64,
 }
 
 impl Board {
@@ -18,6 +20,8 @@ impl Board {
             w3: 0.0,
             w4: 0.0,
             w5: 0.0,
+            w6: 0.0,
+            w7: 0.0,
         }
     }
 
@@ -155,6 +159,60 @@ impl Board {
         score as f64
     }
 
+    pub fn two_in_a_row(&self, player: char) -> f64 {
+        let mut count = 0.0;
+
+        // Check rows and columns
+        for i in 0..3 {
+            if (self.state[i][0] == Some(player)
+                && self.state[i][1] == Some(player)
+                && self.state[i][2] == None)
+                || (self.state[i][0] == Some(player)
+                    && self.state[i][2] == Some(player)
+                    && self.state[i][1] == None)
+                || (self.state[i][1] == Some(player)
+                    && self.state[i][2] == Some(player)
+                    && self.state[i][0] == None)
+                || (self.state[0][i] == Some(player)
+                    && self.state[1][i] == Some(player)
+                    && self.state[2][i] == None)
+                || (self.state[0][i] == Some(player)
+                    && self.state[2][i] == Some(player)
+                    && self.state[1][i] == None)
+                || (self.state[1][i] == Some(player)
+                    && self.state[2][i] == Some(player)
+                    && self.state[0][i] == None)
+            {
+                count += 1.0;
+            }
+        }
+
+        // Check diagonals
+        if (self.state[0][0] == Some(player)
+            && self.state[1][1] == Some(player)
+            && self.state[2][2] == None)
+            || (self.state[0][0] == Some(player)
+                && self.state[2][2] == Some(player)
+                && self.state[1][1] == None)
+            || (self.state[1][1] == Some(player)
+                && self.state[2][2] == Some(player)
+                && self.state[0][0] == None)
+            || (self.state[0][2] == Some(player)
+                && self.state[1][1] == Some(player)
+                && self.state[2][0] == None)
+            || (self.state[0][2] == Some(player)
+                && self.state[2][0] == Some(player)
+                && self.state[1][1] == None)
+            || (self.state[1][1] == Some(player)
+                && self.state[2][0] == Some(player)
+                && self.state[0][2] == None)
+        {
+            count += 1.0;
+        }
+
+        count
+    }
+
     pub fn game_progress(&self) -> f64 {
         self.moves_played as f64
     }
@@ -169,11 +227,13 @@ impl Board {
         }
 
         let old_value: f64 = self.w1 * self.board_state()
-            + self.w2 * self.blocking_opponent()
+            // + self.w2 * self.blocking_opponent()
             + self.w3 * self.center_control()
-            + self.w4 * self.corner_control()
-            + self.w5 * self.mobility()
-            - self.game_progress();
+            // + self.w4 * self.corner_control()
+            // + self.w5 * self.mobility()
+        + self.w6 * self.two_in_a_row('X') // use the new feature here
+            + self.w7 * self.two_in_a_row('O');
+        -self.game_progress();
 
         let new_value: f64 = 0.1 * (score - old_value);
 
@@ -182,6 +242,8 @@ impl Board {
         self.w3 += new_value * self.center_control();
         self.w4 += new_value * self.corner_control();
         self.w5 += new_value * self.mobility();
+        self.w6 += new_value * self.two_in_a_row('X');
+        // self.w7 += new_value * self.two_in_a_row('O');
 
         return old_value;
     }

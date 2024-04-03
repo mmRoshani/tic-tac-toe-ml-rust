@@ -15,9 +15,6 @@ slint::slint! {
         Text {
             text: root.message_text;
         }
-        StandardButton {
-            kind: close;
-        }
     }
 }
 
@@ -59,39 +56,39 @@ fn main() {
             match button_num {
                 0 => {
                     let machine_move = movemnt(&mut board, &ui, 0, 0);
-                    show_o(&tiles_model, machine_move);
+                    show_o(&tiles_model, &ui, machine_move, &mut board);
                 }
                 1 => {
                     let machine_move = movemnt(&mut board, &ui, 0, 1);
-                    show_o(&tiles_model, machine_move);
+                    show_o(&tiles_model, &ui, machine_move, &mut board);
                 }
                 2 => {
                     let machine_move = movemnt(&mut board, &ui, 0, 2);
-                    show_o(&tiles_model, machine_move);
+                    show_o(&tiles_model, &ui, machine_move, &mut board);
                 }
                 3 => {
                     let machine_move = movemnt(&mut board, &ui, 1, 0);
-                    show_o(&tiles_model, machine_move);
+                    show_o(&tiles_model, &ui, machine_move, &mut board);
                 }
                 4 => {
                     let machine_move = movemnt(&mut board, &ui, 1, 1);
-                    show_o(&tiles_model, machine_move);
+                    show_o(&tiles_model, &ui, machine_move, &mut board);
                 }
                 5 => {
                     let machine_move = movemnt(&mut board, &ui, 1, 2);
-                    show_o(&tiles_model, machine_move);
+                    show_o(&tiles_model, &ui, machine_move, &mut board);
                 }
                 6 => {
                     let machine_move = movemnt(&mut board, &ui, 2, 0);
-                    show_o(&tiles_model, machine_move);
+                    show_o(&tiles_model, &ui, machine_move, &mut board);
                 }
                 7 => {
                     let machine_move = movemnt(&mut board, &ui, 2, 1);
-                    show_o(&tiles_model, machine_move);
+                    show_o(&tiles_model, &ui, machine_move, &mut board);
                 }
                 8 => {
                     let machine_move = movemnt(&mut board, &ui, 2, 2);
-                    show_o(&tiles_model, machine_move);
+                    show_o(&tiles_model, &ui, machine_move, &mut board);
                 }
                 _ => println!("{}", "Unsupported case"),
             }
@@ -103,10 +100,6 @@ fn main() {
     // });
 
     ui.run().unwrap();
-}
-
-fn clear_state(board: &mut engine::ml::Board) {
-    board.state = [[None; 3]; 3];
 }
 
 fn movemnt(
@@ -122,21 +115,21 @@ fn movemnt(
         println!("u won");
         let dialog = DialogBox::new().expect("some error");
         dialog.set_message_text("you won!".into());
-        dialog.run();
+        let _ = dialog.run();
         ui.set_disable_tiles(true);
         return (10, 10);
     } else if board.winning_lines('O') {
         println!("computer won!");
         let dialog = DialogBox::new().expect("some error");
         dialog.set_message_text("computer won ;)".into());
-        dialog.run();
+        let _ = dialog.run();
         ui.set_disable_tiles(true);
         return (10, 10);
     } else if board.moves_played == 9 {
         println!("end of the game");
         let dialog = DialogBox::new().expect("some error");
         dialog.set_message_text("no one won, like life!".into());
-        dialog.run();
+        let _ = dialog.run();
         ui.set_disable_tiles(true);
         return (10, 10);
     }
@@ -163,13 +156,6 @@ fn movemnt(
     }
 
     board.moves_played += 1;
-
-    for i in 0..3 {
-        for j in 0..3 {
-            print!("| {:?}| ", board.state[i][j]);
-        }
-        print!("\n");
-    }
 
     machine_best_move_val
 }
@@ -199,7 +185,12 @@ fn neighbors(i: usize, j: usize) -> Vec<(usize, usize)> {
     neighbors
 }
 
-fn show_o(tiles_model: &Rc<VecModel<TileData>>, machine_move: (usize, usize)) {
+fn show_o(
+    tiles_model: &Rc<VecModel<TileData>>,
+    ui: &MainWindow,
+    machine_move: (usize, usize),
+    board: &mut engine::ml::Board,
+) {
     let i: usize = machine_move.0;
     let j: usize = machine_move.1;
     let mut tile_idx: usize = 512;
@@ -223,7 +214,29 @@ fn show_o(tiles_model: &Rc<VecModel<TileData>>, machine_move: (usize, usize)) {
     } else if i == 2 && j == 2 {
         tile_idx = 8;
     } else {
-        println!("Unhandled case!")
+        let mut cat_image = image::open("./icons/meme.png")
+            .expect("Error loading cat image")
+            .into_rgba8();
+        image::imageops::colorops::brighten_in_place(&mut cat_image, 20);
+
+        for (i, mut tile) in tiles_model.iter().enumerate() {
+            tile.image_visible = false; // change after cleared the statue
+            tile.solved = false;
+            let buffer = SharedPixelBuffer::<Rgba8Pixel>::clone_from_slice(
+                cat_image.as_raw(),
+                cat_image.width(),
+                cat_image.height(),
+            );
+            tile.image = Image::from_rgba8(buffer);
+            tiles_model.set_row_data(i, tile);
+        }
+
+        ui.set_disable_tiles(false);
+        board.state = [[None; 3]; 3];
+        println!(
+            "w1: {}, w2: {}, w3: {}, w4: {}, w5: {}, w6: {}, w7: {}",
+            board.w1, board.w2, board.w3, board.w4, board.w5, board.w6, board.w7
+        );
     }
 
     let mut flipped_tiles = tiles_model

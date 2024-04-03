@@ -8,18 +8,6 @@ struct TileData {
     key: int,
 }
 
-export component Example inherits Dialog {
-    Text {
-      text: "This is a dialog box";
-    }
-    StandardButton { kind: ok; }
-    StandardButton { kind: cancel; }
-    Button {
-      text: "More Info";
-      dialog-button-role: action;
-    }
-}
-
 component MemoryTile inherits Rectangle {
     callback clicked;
     in property <bool> open_curtain;
