@@ -125,7 +125,28 @@ fn movemnt(
         let _ = dialog.run();
         ui.set_disable_tiles(true);
         return (10, 10);
-    } else if board.winning_lines('O') {
+    } else if board.moves_played == 9 {
+        board.x_o_winning_state = (board.x_o_winning_state.0 + 1, board.x_o_winning_state.1 + 1);
+        board.update_function(Some('-'));
+        let dialog = DialogBox::new().expect("some error");
+        dialog.set_message_text(
+            format!(
+                "Equal game, good job; your score is: {} and computer socre is: {}",
+                board.x_o_winning_state.0, board.x_o_winning_state.1
+            )
+            .into(),
+        );
+        let _ = dialog.run();
+        ui.set_disable_tiles(true);
+        return (10, 10);
+    }
+
+    board.moves_played += 1;
+
+    // do the movemnt
+    let computer_move = board.computer_move();
+
+    if board.winning_lines('O') {
         board.x_o_winning_state = (board.x_o_winning_state.0, board.x_o_winning_state.1 + 1);
         board.update_function(Some('O'));
         let dialog = DialogBox::new().expect("some error");
@@ -155,9 +176,7 @@ fn movemnt(
         return (10, 10);
     }
 
-    board.moves_played += 1;
-
-    board.computer_move()
+    return computer_move;
 }
 
 fn show_o(
@@ -208,6 +227,7 @@ fn show_o(
 
         ui.set_disable_tiles(false);
         board.state = [[None; 3]; 3];
+        board.moves_played = 0;
     }
 
     let mut flipped_tiles = tiles_model
