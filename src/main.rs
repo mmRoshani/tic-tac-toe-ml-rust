@@ -9,7 +9,7 @@ use std::rc::Rc;
 slint::include_modules!();
 
 slint::slint! {
-    import {StandardButton} from "std-widgets.slint";
+    import {StandardButton, ProgressIndicator} from "std-widgets.slint";
     DialogBox := Dialog {
         property <string> message_text: "Default message";
         Text {
@@ -17,8 +17,33 @@ slint::slint! {
         }
     }
 }
+slint::slint! {
+    import { ProgressIndicator} from "std-widgets.slint";
+
+    DialogScrollable := Dialog {
+        in property <float> on_going: 0/100;
+        width: 200px;
+        height: 25px;
+        ProgressIndicator {
+            progress: on_going;
+        }
+    }
+}
 
 fn main() {
+    let args: Vec<String> = std::env::args().collect();
+
+    let mut threshold: i32 = 0;
+    if args.len() > 1 {
+        threshold = args[1].parse::<i32>().unwrap();
+    }
+
+    println!(
+        "Secondry agent starting to run for threshold of: {}",
+        threshold
+    );
+
+    // run ui
     let ui = MainWindow::new().unwrap();
 
     let tiles: Vec<TileData> = ui.get_memory_tiles().iter().collect();
@@ -28,7 +53,55 @@ fn main() {
 
     let ui_handle = ui.as_weak();
 
-    let mut board = engine::ml::Board::new();
+    // game initializtion
+    let mut board = engine::ml::Board::new(); // this agent is playing `O`
+    let mut secondary_board = engine::ml::Board::new(); // that agent is playing `X`
+                                                        // Open dialog
+    let progress_dialog = DialogScrollable::new().expect("some error");
+    let _ = progress_dialog.show();
+
+    while ((board.x_o_winning_state.1 + 1) + (secondary_board.x_o_winning_state.0 + 1)) <= threshold
+    {
+        // set the progerss
+        let progress: f32 =
+            ((board.x_o_winning_state.1 + 1 + secondary_board.x_o_winning_state.0 + 1) / threshold)
+                as f32
+                * 100.0;
+        progress_dialog.set_on_going(progress);
+        println!(">>>>>>>{:?}>>>>>>>", progress);
+        // playing `O`
+        let first_agent_move = board.computer_move();
+        // let first_agent_tile_idx = calculate_tile_index(first_agent_move);
+        board.moves_played += 1;
+        if board.moves_played == 9 {
+            board.x_o_winning_state =
+                (board.x_o_winning_state.0 + 1, board.x_o_winning_state.1 + 1);
+            board.moves_played = 0;
+            continue;
+        } else if board.winning_lines('O') {
+            board.x_o_winning_state = (board.x_o_winning_state.0, board.x_o_winning_state.1 + 1);
+            board.moves_played = 0;
+            continue;
+        }
+        secondary_board.state[first_agent_move.0][first_agent_move.1];
+        // let seconf_agent_move = calculate_tile_index(secondary_board.computer_move());
+        if secondary_board.moves_played == 9 {
+            secondary_board.x_o_winning_state = (
+                secondary_board.x_o_winning_state.0 + 1,
+                secondary_board.x_o_winning_state.1 + 1,
+            );
+            secondary_board.moves_played = 0;
+            continue;
+        } else if secondary_board.winning_lines('X') {
+            secondary_board.x_o_winning_state = (
+                secondary_board.x_o_winning_state.0 + 1,
+                secondary_board.x_o_winning_state.1,
+            );
+            secondary_board.moves_played = 0;
+
+            continue;
+        }
+    }
 
     ui.on_play(move |button_num: i32| {
         let ui = ui_handle.unwrap();
@@ -248,4 +321,34 @@ fn show_o(
         tile.solved = true;
         tiles_model.set_row_data(t_idx, tile);
     }
+}
+
+fn calculate_tile_index(machine_move: (usize, usize)) -> usize {
+    let i: usize = machine_move.0;
+    let j: usize = machine_move.1;
+    let mut tile_idx: usize = 512;
+
+    if i == 0 && j == 0 {
+        tile_idx = 0;
+    } else if i == 0 && j == 1 {
+        tile_idx = 1;
+    } else if i == 0 && j == 2 {
+        tile_idx = 2;
+    } else if i == 1 && j == 0 {
+        tile_idx = 3;
+    } else if i == 1 && j == 1 {
+        tile_idx = 4;
+    } else if i == 1 && j == 2 {
+        tile_idx = 5;
+    } else if i == 2 && j == 0 {
+        tile_idx = 6;
+    } else if i == 2 && j == 1 {
+        tile_idx = 7;
+    } else if i == 2 && j == 2 {
+        tile_idx = 8;
+    } else {
+        unimplemented!();
+    }
+
+    tile_idx
 }
